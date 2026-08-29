@@ -1,23 +1,13 @@
 """Air quality assessment over Ghana using Sentinel-5P data.
 
-This script uses Google Earth Engine and geemap to create an interactive map
+This script uses Google Earth Engine and Folium to create an interactive map
 showing NO2, CO, SO2, aerosol index, and a weighted-overlay air quality index.
 """
 
 import ee
-import geemap
+import folium
+import os
 
-
-AOI = ee.Geometry.Polygon(
-    [
-        [
-            [-1.1659799208965849, 6.20294980302239],
-            [-1.1659799208965849, 5.262862008051889],
-            [0.8060659775409151, 5.262862008051889],
-            [0.8060659775409151, 6.20294980302239],
-        ]
-    ]
-)
 
 START_DATE = "2023-01-01"
 END_DATE = "2024-01-31"
@@ -30,13 +20,28 @@ POLLUTANT_WEIGHTS = {
 }
 
 
+def get_area_of_interest() -> ee.Geometry:
+    """Return the Ghana area of interest used for this analysis."""
+    return ee.Geometry.Polygon(
+        [
+            [
+                [-1.1659799208965849, 6.20294980302239],
+                [-1.1659799208965849, 5.262862008051889],
+                [0.8060659775409151, 5.262862008051889],
+                [0.8060659775409151, 6.20294980302239],
+            ]
+        ]
+    )
+
+
 def initialize_earth_engine() -> None:
     """Initialize Earth Engine, prompting authentication when required."""
+    project = os.environ.get("EE_PROJECT")
     try:
-        ee.Initialize()
+        ee.Initialize(project=project)
     except Exception:
         ee.Authenticate()
-        ee.Initialize()
+        ee.Initialize(project=project)
 
 
 def get_classified_pollutant(
@@ -47,6 +52,7 @@ def get_classified_pollutant(
     weight: float,
     palette: list[str],
     label: str,
+    area_of_interest: ee.Geometry,
 ) -> tuple[ee.Image, ee.Image, dict[str, object], str]:
     """Load, normalize, classify, and weight a Sentinel-5P pollutant layer."""
     dataset = (
@@ -54,7 +60,7 @@ def get_classified_pollutant(
         .select(band)
         .filterDate(START_DATE, END_DATE)
         .mean()
-        .clip(AOI)
+        .clip(area_of_interest)
     )
 
     normalized = dataset.subtract(min_value).divide(max_value - min_value).clamp(0, 1)
@@ -81,8 +87,30 @@ def get_classified_pollutant(
     return dataset, weighted, visualization, label
 
 
-def build_air_quality_map() -> geemap.Map:
-    """Build the interactive geemap map with pollutant and AQI layers."""
+def add_ee_layer(
+    map_view: folium.Map,
+    ee_object: ee.Image | ee.Geometry,
+    visualization: dict[str, object],
+    name: str,
+) -> None:
+    """Add an Earth Engine image or geometry layer to a Folium map."""
+    if isinstance(ee_object, ee.Geometry):
+        ee_object = ee.Image().paint(ee_object, 0, 2)
+
+    map_id = ee.Image(ee_object).getMapId(visualization)
+    folium.raster_layers.TileLayer(
+        tiles=map_id["tile_fetcher"].url_format,
+        attr="Google Earth Engine",
+        name=name,
+        overlay=True,
+        control=True,
+    ).add_to(map_view)
+
+
+def build_air_quality_map() -> folium.Map:
+    """Build the interactive Folium map with pollutant and AQI layers."""
+    area_of_interest = get_area_of_interest()
+
     no2, no2_weighted, vis_no2, label_no2 = get_classified_pollutant(
         "NO2",
         "NO2_column_number_density",
@@ -91,6 +119,7 @@ def build_air_quality_map() -> geemap.Map:
         POLLUTANT_WEIGHTS["NO2"],
         ["blue", "purple", "red", "yellow"],
         "NO2 Concentration",
+        area_of_interest,
     )
 
     co, co_weighted, vis_co, label_co = get_classified_pollutant(
@@ -101,6 +130,7 @@ def build_air_quality_map() -> geemap.Map:
         POLLUTANT_WEIGHTS["CO"],
         ["black", "brown", "orange", "yellow"],
         "CO Concentration",
+        area_of_interest,
     )
 
     so2, so2_weighted, vis_so2, label_so2 = get_classified_pollutant(
@@ -111,6 +141,7 @@ def build_air_quality_map() -> geemap.Map:
         POLLUTANT_WEIGHTS["SO2"],
         ["blue", "cyan", "purple", "red"],
         "SO2 Concentration",
+        area_of_interest,
     )
 
     aerosol, aerosol_weighted, vis_aerosol, label_aerosol = get_classified_pollutant(
@@ -121,6 +152,7 @@ def build_air_quality_map() -> geemap.Map:
         POLLUTANT_WEIGHTS["Aerosol"],
         ["green", "yellow", "orange", "red"],
         "Aerosol Index",
+        area_of_interest,
     )
 
     aqi_weighted_overlay = no2_weighted.add(co_weighted).add(so2_weighted).add(
@@ -128,17 +160,19 @@ def build_air_quality_map() -> geemap.Map:
     )
     aqi_normalized = aqi_weighted_overlay.divide(4)
 
-    map_view = geemap.Map(center=[5.7, -0.2], zoom=7)
-    map_view.addLayer(no2, vis_no2, label_no2)
-    map_view.addLayer(co, vis_co, label_co)
-    map_view.addLayer(so2, vis_so2, label_so2)
-    map_view.addLayer(aerosol, vis_aerosol, label_aerosol)
-    map_view.addLayer(
+    map_view = folium.Map(location=[5.7, -0.2], zoom_start=7, tiles="OpenStreetMap")
+    add_ee_layer(map_view, no2, vis_no2, label_no2)
+    add_ee_layer(map_view, co, vis_co, label_co)
+    add_ee_layer(map_view, so2, vis_so2, label_so2)
+    add_ee_layer(map_view, aerosol, vis_aerosol, label_aerosol)
+    add_ee_layer(
+        map_view,
         aqi_normalized,
         {"min": 0, "max": 1, "palette": ["green", "yellow", "orange", "red"]},
         "Air Quality Index - Weighted Overlay",
     )
-    map_view.addLayer(AOI, {"color": "white"}, "AOI Boundary")
+    add_ee_layer(map_view, area_of_interest, {"palette": "white"}, "AOI Boundary")
+    folium.LayerControl(collapsed=False).add_to(map_view)
 
     return map_view
 
@@ -146,7 +180,7 @@ def build_air_quality_map() -> geemap.Map:
 def main() -> None:
     initialize_earth_engine()
     map_view = build_air_quality_map()
-    map_view.to_html("ghana_air_quality_map.html")
+    map_view.save("ghana_air_quality_map.html")
     print("Saved interactive map to ghana_air_quality_map.html")
 
 

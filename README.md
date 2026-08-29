@@ -21,7 +21,7 @@ January 1, 2023 to January 31, 2024
 
 - Python
 - Google Earth Engine
-- geemap
+- Folium
 - Sentinel-5P
 - Weighted overlay analysis
 
@@ -29,11 +29,12 @@ January 1, 2023 to January 31, 2024
 
 ```text
 .
-├── src/
-│   └── air_quality_assessment.py
-├── .gitignore
-├── README.md
-└── requirements.txt
+|-- src/
+|   `-- air_quality_assessment.py
+|-- .gitignore
+|-- LICENSE
+|-- README.md
+`-- requirements.txt
 ```
 
 ## How To Run
