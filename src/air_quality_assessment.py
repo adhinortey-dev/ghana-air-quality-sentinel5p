@@ -55,12 +55,14 @@ def get_classified_pollutant(
     area_of_interest: ee.Geometry,
 ) -> tuple[ee.Image, ee.Image, dict[str, object], str]:
     """Load, normalize, classify, and weight a Sentinel-5P pollutant layer."""
+    aoi_mask = ee.Image.constant(1).clip(area_of_interest).selfMask()
     dataset = (
         ee.ImageCollection(f"COPERNICUS/S5P/NRTI/L3_{pollutant}")
         .select(band)
         .filterDate(START_DATE, END_DATE)
         .mean()
         .clip(area_of_interest)
+        .updateMask(aoi_mask)
     )
 
     normalized = dataset.subtract(min_value).divide(max_value - min_value).clamp(0, 1)
@@ -81,7 +83,7 @@ def get_classified_pollutant(
         },
     )
 
-    weighted = classified.multiply(weight)
+    weighted = classified.multiply(weight).updateMask(aoi_mask)
     visualization = {"min": min_value, "max": max_value, "palette": palette}
 
     return dataset, weighted, visualization, label
@@ -177,7 +179,8 @@ def build_air_quality_map() -> folium.Map:
     aqi_weighted_overlay = no2_weighted.add(co_weighted).add(so2_weighted).add(
         aerosol_weighted
     )
-    aqi_normalized = aqi_weighted_overlay.divide(4)
+    aoi_mask = ee.Image.constant(1).clip(area_of_interest).selfMask()
+    aqi_normalized = aqi_weighted_overlay.divide(4).updateMask(aoi_mask)
 
     map_view = folium.Map(location=[5.7, -0.2], zoom_start=7, tiles="OpenStreetMap")
     add_ee_layer(map_view, no2, vis_no2, label_no2)
