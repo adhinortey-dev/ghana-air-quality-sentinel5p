@@ -175,7 +175,7 @@ def build_air_quality_map() -> folium.Map:
         aqi_normalized,
         {
             "min": 0,
-            "max": 1,
+            "max": 0.35,
             "palette": ["#1a9850", "#91cf60", "#fee08b", "#fc8d59", "#d73027"],
         },
         "Continuous Air Quality Index - Weighted Overlay",
