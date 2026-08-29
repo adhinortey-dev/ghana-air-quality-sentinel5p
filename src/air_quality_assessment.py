@@ -54,7 +54,7 @@ def get_classified_pollutant(
     label: str,
     area_of_interest: ee.Geometry,
 ) -> tuple[ee.Image, ee.Image, dict[str, object], str]:
-    """Load, normalize, classify, and weight a Sentinel-5P pollutant layer."""
+    """Load, normalize, and weight a Sentinel-5P pollutant layer."""
     aoi_mask = ee.Image.constant(1).clip(area_of_interest).selfMask()
     dataset = (
         ee.ImageCollection(f"COPERNICUS/S5P/NRTI/L3_{pollutant}")
@@ -66,24 +66,7 @@ def get_classified_pollutant(
     )
 
     normalized = dataset.subtract(min_value).divide(max_value - min_value).clamp(0, 1)
-    classified = normalized.expression(
-        "(b1 <= T1) ? C1"
-        " : (b1 <= T2) ? C2"
-        " : (b1 <= T3) ? C3"
-        " : C4",
-        {
-            "b1": normalized,
-            "T1": 0.25,
-            "C1": 1,
-            "T2": 0.50,
-            "C2": 2,
-            "T3": 0.75,
-            "C3": 3,
-            "C4": 4,
-        },
-    )
-
-    weighted = classified.multiply(weight).updateMask(aoi_mask)
+    weighted = normalized.multiply(weight).updateMask(aoi_mask)
     visualization = {"min": min_value, "max": max_value, "palette": palette}
 
     return dataset, weighted, visualization, label
@@ -180,7 +163,7 @@ def build_air_quality_map() -> folium.Map:
         aerosol_weighted
     )
     aoi_mask = ee.Image.constant(1).clip(area_of_interest).selfMask()
-    aqi_normalized = aqi_weighted_overlay.divide(4).updateMask(aoi_mask)
+    aqi_normalized = aqi_weighted_overlay.updateMask(aoi_mask)
 
     map_view = folium.Map(location=[5.7, -0.2], zoom_start=7, tiles="OpenStreetMap")
     add_ee_layer(map_view, no2, vis_no2, label_no2)
@@ -190,8 +173,12 @@ def build_air_quality_map() -> folium.Map:
     add_ee_layer(
         map_view,
         aqi_normalized,
-        {"min": 0, "max": 1, "palette": ["green", "yellow", "orange", "red"]},
-        "Air Quality Index - Weighted Overlay",
+        {
+            "min": 0,
+            "max": 1,
+            "palette": ["#1a9850", "#91cf60", "#fee08b", "#fc8d59", "#d73027"],
+        },
+        "Continuous Air Quality Index - Weighted Overlay",
     )
     add_aoi_outline(map_view)
     folium.LayerControl(collapsed=False).add_to(map_view)
