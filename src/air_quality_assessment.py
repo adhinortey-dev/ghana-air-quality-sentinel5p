@@ -111,6 +111,84 @@ def add_aoi_outline(map_view: folium.Map) -> None:
     ).add_to(map_view)
 
 
+def add_city_markers(map_view: folium.Map) -> None:
+    """Add reference markers for major urban/industrial locations."""
+    city_markers = [
+        ("Accra", 5.6037, -0.1870, "Capital and major urban center"),
+        ("Tema", 5.6698, -0.0166, "Industrial and port city"),
+    ]
+    for name, latitude, longitude, description in city_markers:
+        folium.Marker(
+            location=[latitude, longitude],
+            popup=f"<strong>{name}</strong><br>{description}",
+            tooltip=name,
+            icon=folium.Icon(color="blue", icon="info-sign"),
+        ).add_to(map_view)
+
+
+def add_map_title(map_view: folium.Map) -> None:
+    """Add a visible map title."""
+    title_html = """
+    <div style="
+        position: fixed;
+        top: 16px;
+        left: 50px;
+        z-index: 9999;
+        background: rgba(255, 255, 255, 0.92);
+        padding: 10px 14px;
+        border: 1px solid #333;
+        border-radius: 4px;
+        font-family: Arial, sans-serif;
+        font-size: 16px;
+        font-weight: 700;
+        color: #222;
+        box-shadow: 0 1px 4px rgba(0, 0, 0, 0.25);
+    ">
+        Sentinel-5P Composite Air Quality Index - Ghana AOI
+    </div>
+    """
+    map_view.get_root().html.add_child(folium.Element(title_html))
+
+
+def add_aqi_legend(map_view: folium.Map) -> None:
+    """Add a color legend for the composite AQI layer."""
+    legend_html = """
+    <div style="
+        position: fixed;
+        bottom: 28px;
+        left: 50px;
+        width: 250px;
+        z-index: 9999;
+        background: rgba(255, 255, 255, 0.92);
+        padding: 12px;
+        border: 1px solid #333;
+        border-radius: 4px;
+        font-family: Arial, sans-serif;
+        font-size: 13px;
+        color: #222;
+        box-shadow: 0 1px 4px rgba(0, 0, 0, 0.25);
+    ">
+        <div style="font-weight: 700; margin-bottom: 8px;">
+            Relative Composite AQI
+        </div>
+        <div style="
+            height: 14px;
+            background: linear-gradient(to right, #1a9850, #91cf60, #fee08b, #fc8d59, #d73027);
+            border: 1px solid #777;
+            margin-bottom: 6px;
+        "></div>
+        <div style="display: flex; justify-content: space-between;">
+            <span>Lower</span>
+            <span>Higher</span>
+        </div>
+        <div style="margin-top: 8px; font-size: 12px;">
+            Based on normalized NO2, CO, SO2, and aerosol index layers.
+        </div>
+    </div>
+    """
+    map_view.get_root().html.add_child(folium.Element(legend_html))
+
+
 def build_air_quality_map() -> folium.Map:
     """Build the interactive Folium map with pollutant and AQI layers."""
     area_of_interest = get_area_of_interest()
@@ -180,18 +258,11 @@ def build_air_quality_map() -> folium.Map:
         },
         "Continuous Air Quality Index - Weighted Overlay",
     )
-    add_ee_layer(
-        map_view,
-        aqi_normalized,
-        {
-            "min": 0.15,
-            "max": 0.55,
-            "palette": ["#1a9850", "#91cf60", "#fee08b", "#fc8d59", "#d73027"],
-        },
-        "Hotspot-Enhanced AQI - Relative Contrast",
-    )
     add_aoi_outline(map_view)
-    folium.LayerControl(collapsed=False).add_to(map_view)
+    add_city_markers(map_view)
+    add_map_title(map_view)
+    add_aqi_legend(map_view)
+    folium.LayerControl(collapsed=True).add_to(map_view)
 
     return map_view
 
