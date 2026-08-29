@@ -175,10 +175,20 @@ def build_air_quality_map() -> folium.Map:
         aqi_normalized,
         {
             "min": 0,
-            "max": 0.35,
+            "max": 0.65,
             "palette": ["#1a9850", "#91cf60", "#fee08b", "#fc8d59", "#d73027"],
         },
         "Continuous Air Quality Index - Weighted Overlay",
+    )
+    add_ee_layer(
+        map_view,
+        aqi_normalized,
+        {
+            "min": 0.15,
+            "max": 0.55,
+            "palette": ["#1a9850", "#91cf60", "#fee08b", "#fc8d59", "#d73027"],
+        },
+        "Hotspot-Enhanced AQI - Relative Contrast",
     )
     add_aoi_outline(map_view)
     folium.LayerControl(collapsed=False).add_to(map_view)
