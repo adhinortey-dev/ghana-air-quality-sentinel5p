@@ -107,6 +107,25 @@ def add_ee_layer(
     ).add_to(map_view)
 
 
+def add_aoi_outline(map_view: folium.Map) -> None:
+    """Add the study area as a transparent polygon outline."""
+    coordinates = [
+        [6.20294980302239, -1.1659799208965849],
+        [5.262862008051889, -1.1659799208965849],
+        [5.262862008051889, 0.8060659775409151],
+        [6.20294980302239, 0.8060659775409151],
+        [6.20294980302239, -1.1659799208965849],
+    ]
+    folium.Polygon(
+        locations=coordinates,
+        color="black",
+        weight=2,
+        fill=False,
+        tooltip="Area of Interest",
+        name="AOI Boundary",
+    ).add_to(map_view)
+
+
 def build_air_quality_map() -> folium.Map:
     """Build the interactive Folium map with pollutant and AQI layers."""
     area_of_interest = get_area_of_interest()
@@ -171,7 +190,7 @@ def build_air_quality_map() -> folium.Map:
         {"min": 0, "max": 1, "palette": ["green", "yellow", "orange", "red"]},
         "Air Quality Index - Weighted Overlay",
     )
-    add_ee_layer(map_view, area_of_interest, {"palette": "white"}, "AOI Boundary")
+    add_aoi_outline(map_view)
     folium.LayerControl(collapsed=False).add_to(map_view)
 
     return map_view
