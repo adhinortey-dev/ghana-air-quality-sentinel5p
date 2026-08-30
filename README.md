@@ -4,6 +4,14 @@ This project uses Google Earth Engine satellite data to assess air quality over 
 
 ![Composite AQI map for Ghana AOI](figures/composite_aqi_map.png)
 
+## Live Map
+
+GitHub Pages URL after enabling Pages from the repository settings:
+
+`https://adhinortey-dev.github.io/ghana-air-quality-sentinel5p/`
+
+The root page redirects to the exported interactive Folium map in `outputs/ghana_air_quality_map.html`.
+
 ## Research Question
 
 How can Sentinel-5P satellite data and weighted overlay analysis be used to assess and map relative air quality patterns in selected urban and industrial areas of Ghana?
@@ -49,7 +57,10 @@ January 1, 2023 to January 31, 2024
 |   `-- air_quality_assessment.py
 |-- figures/
 |   `-- composite_aqi_map.png
+|-- outputs/
+|   `-- ghana_air_quality_map.html
 |-- .gitignore
+|-- index.html
 |-- LICENSE
 |-- README.md
 `-- requirements.txt

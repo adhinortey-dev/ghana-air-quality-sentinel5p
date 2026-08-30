@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+<html>
+<head>
+    
+    <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
+    <script src="https://cdn.jsdelivr.net/npm/leaflet@1.9.3/dist/leaflet.js"></script>
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Leaflet.awesome-markers/2.0.2/leaflet.awesome-markers.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.9.3/dist/leaflet.css"/>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/css/bootstrap.min.css"/>
+    <link rel="stylesheet" href="https://netdna.bootstrapcdn.com/bootstrap/3.0.0/css/bootstrap-glyphicons.css"/>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.2.0/css/all.min.css"/>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/Leaflet.awesome-markers/2.0.2/leaflet.awesome-markers.css"/>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/python-visualization/folium/folium/templates/leaflet.awesome.rotate.min.css"/>
+    
+            <meta name="viewport" content="width=device-width,
+                initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+            <style>
+                #map_e9aa9cc69ab88881777501a48b386e2b {
+                    position: relative;
+                    width: 100.0%;
+                    height: 100.0%;
+                    left: 0.0%;
+                    top: 0.0%;
+                }
+                .leaflet-container { font-size: 1rem; }
+            </style>
+
+            <style>html, body {
+                width: 100%;
+                height: 100%;
+                margin: 0;
+                padding: 0;
+            }
+            </style>
+
+            <style>#map {
+                position:absolute;
+                top:0;
+                bottom:0;
+                right:0;
+                left:0;
+                }
+            </style>
+
+            <script>
+                L_NO_TOUCH = false;
+                L_DISABLE_3D = false;
+            </script>
+
+        
+</head>
+<body>
+    
+    
+    <div style="
+        position: fixed;
+        top: 16px;
+        left: 50px;
+        z-index: 9999;
+        background: rgba(255, 255, 255, 0.92);
+        padding: 10px 14px;
+        border: 1px solid #333;
+        border-radius: 4px;
+        font-family: Arial, sans-serif;
+        font-size: 16px;
+        font-weight: 700;
+        color: #222;
+        box-shadow: 0 1px 4px rgba(0, 0, 0, 0.25);
+    ">
+        Sentinel-5P Composite Air Quality Index - Ghana AOI
+    </div>
+    
+    
+    <div style="
+        position: fixed;
+        bottom: 28px;
+        left: 50px;
+        width: 250px;
+        z-index: 9999;
+        background: rgba(255, 255, 255, 0.92);
+        padding: 12px;
+        border: 1px solid #333;
+        border-radius: 4px;
+        font-family: Arial, sans-serif;
+        font-size: 13px;
+        color: #222;
+        box-shadow: 0 1px 4px rgba(0, 0, 0, 0.25);
+    ">
+        <div style="font-weight: 700; margin-bottom: 8px;">
+            Relative Composite AQI
+        </div>
+        <div style="
+            height: 14px;
+            background: linear-gradient(to right, #1a9850, #91cf60, #fee08b, #fc8d59, #d73027);
+            border: 1px solid #777;
+            margin-bottom: 6px;
+        "></div>
+        <div style="display: flex; justify-content: space-between;">
+            <span>Lower</span>
+            <span>Higher</span>
+        </div>
+        <div style="margin-top: 8px; font-size: 12px;">
+            Based on normalized NO2, CO, SO2, and aerosol index layers.
+        </div>
+    </div>
+    
+    
+            <div class="folium-map" id="map_e9aa9cc69ab88881777501a48b386e2b" ></div>
+        
+</body>
+<script>
+    
+    
+            var map_e9aa9cc69ab88881777501a48b386e2b = L.map(
+                "map_e9aa9cc69ab88881777501a48b386e2b",
+                {
+                    center: [5.7, -0.2],
+                    crs: L.CRS.EPSG3857,
+                    ...{
+  "zoom": 7,
+  "zoomControl": true,
+  "preferCanvas": false,
+}
+
+                }
+            );
+
+            
+
+        
+    
+            var tile_layer_d4de0dc9ab1ceb047963f8536b5a03c4 = L.tileLayer(
+                "https://tile.openstreetmap.org/{z}/{x}/{y}.png",
+                {
+  "minZoom": 0,
+  "maxZoom": 19,
+  "maxNativeZoom": 19,
+  "noWrap": false,
+  "attribution": "\u0026copy; \u003ca href=\"https://www.openstreetmap.org/copyright\"\u003eOpenStreetMap\u003c/a\u003e contributors",
+  "subdomains": "abc",
+  "detectRetina": false,
+  "tms": false,
+  "opacity": 1,
+}
+
+            );
+        
+    
+            tile_layer_d4de0dc9ab1ceb047963f8536b5a03c4.addTo(map_e9aa9cc69ab88881777501a48b386e2b);
+        
+    
+            var tile_layer_9639d9f8b0f2e1180c295eb3d0445e14 = L.tileLayer(
+                "https://earthengine.googleapis.com/v1/projects/ee-adhinortey/maps/45c8eb88e7daf8925f87bb845894a629-65c1096a509af80d91eb8c4934de2e74/tiles/{z}/{x}/{y}",
+                {
+  "minZoom": 0,
+  "maxZoom": 18,
+  "maxNativeZoom": 18,
+  "noWrap": false,
+  "attribution": "Google Earth Engine",
+  "subdomains": "abc",
+  "detectRetina": false,
+  "tms": false,
+  "opacity": 1,
+}
+
+            );
+        
+    
+            tile_layer_9639d9f8b0f2e1180c295eb3d0445e14.addTo(map_e9aa9cc69ab88881777501a48b386e2b);
+        
+    
+            var tile_layer_7e89a026757c0b62d193df3b270b771a = L.tileLayer(
+                "https://earthengine.googleapis.com/v1/projects/ee-adhinortey/maps/d5138c4c5cc3e30e42e0f3a968710fbd-803f4a3cc5a4ae70213f958de02bfd51/tiles/{z}/{x}/{y}",
+                {
+  "minZoom": 0,
+  "maxZoom": 18,
+  "maxNativeZoom": 18,
+  "noWrap": false,
+  "attribution": "Google Earth Engine",
+  "subdomains": "abc",
+  "detectRetina": false,
+  "tms": false,
+  "opacity": 1,
+}
+
+            );
+        
+    
+            tile_layer_7e89a026757c0b62d193df3b270b771a.addTo(map_e9aa9cc69ab88881777501a48b386e2b);
+        
+    
+            var tile_layer_63c39a3817cc1e154ded58a850035a21 = L.tileLayer(
+                "https://earthengine.googleapis.com/v1/projects/ee-adhinortey/maps/4a9dea1a723d0909519dbc7b4d0410c0-a9e13e68138a06046aa2f47af0e35e7f/tiles/{z}/{x}/{y}",
+                {
+  "minZoom": 0,
+  "maxZoom": 18,
+  "maxNativeZoom": 18,
+  "noWrap": false,
+  "attribution": "Google Earth Engine",
+  "subdomains": "abc",
+  "detectRetina": false,
+  "tms": false,
+  "opacity": 1,
+}
+
+            );
+        
+    
+            tile_layer_63c39a3817cc1e154ded58a850035a21.addTo(map_e9aa9cc69ab88881777501a48b386e2b);
+        
+    
+            var tile_layer_5ffe8351c99ef2763ed54cbfab39496d = L.tileLayer(
+                "https://earthengine.googleapis.com/v1/projects/ee-adhinortey/maps/35fbcd3e9babaf86ef8184fdf8c2ceb2-f26f115fdb2e80f4c769901010364e7c/tiles/{z}/{x}/{y}",
+                {
+  "minZoom": 0,
+  "maxZoom": 18,
+  "maxNativeZoom": 18,
+  "noWrap": false,
+  "attribution": "Google Earth Engine",
+  "subdomains": "abc",
+  "detectRetina": false,
+  "tms": false,
+  "opacity": 1,
+}
+
+            );
+        
+    
+            tile_layer_5ffe8351c99ef2763ed54cbfab39496d.addTo(map_e9aa9cc69ab88881777501a48b386e2b);
+        
+    
+            var tile_layer_41500e2b9a081a5e68c5d99e80f8f620 = L.tileLayer(
+                "https://earthengine.googleapis.com/v1/projects/ee-adhinortey/maps/1ebac9b7d385d079074bdc7fd3102e7e-c8b413ae671acac620459d8ad9019537/tiles/{z}/{x}/{y}",
+                {
+  "minZoom": 0,
+  "maxZoom": 18,
+  "maxNativeZoom": 18,
+  "noWrap": false,
+  "attribution": "Google Earth Engine",
+  "subdomains": "abc",
+  "detectRetina": false,
+  "tms": false,
+  "opacity": 1,
+}
+
+            );
+        
+    
+            tile_layer_41500e2b9a081a5e68c5d99e80f8f620.addTo(map_e9aa9cc69ab88881777501a48b386e2b);
+        
+    
+            var polygon_b15c4a4a2a1750f27499421a04091d77 = L.polygon(
+                [[6.20294980302239, -1.1659799208965849], [5.262862008051889, -1.1659799208965849], [5.262862008051889, 0.8060659775409151], [6.20294980302239, 0.8060659775409151], [6.20294980302239, -1.1659799208965849]],
+                {"bubblingMouseEvents": true, "color": "black", "dashArray": null, "dashOffset": null, "fill": false, "fillColor": "black", "fillOpacity": 0.2, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "noClip": false, "opacity": 1.0, "smoothFactor": 1.0, "stroke": true, "weight": 2}
+            ).addTo(map_e9aa9cc69ab88881777501a48b386e2b);
+        
+    
+            polygon_b15c4a4a2a1750f27499421a04091d77.bindTooltip(
+                `<div>
+                     Area of Interest
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var marker_cdbfe7d6c5472f76966ac132b3d898d2 = L.marker(
+                [5.6037, -0.187],
+                {
+}
+            ).addTo(map_e9aa9cc69ab88881777501a48b386e2b);
+        
+    
+            var icon_30debe8dce66c5f696a3c10387b61d55 = L.AwesomeMarkers.icon(
+                {
+  "markerColor": "blue",
+  "iconColor": "white",
+  "icon": "info-sign",
+  "prefix": "glyphicon",
+  "extraClasses": "fa-rotate-0",
+}
+            );
+        
+    
+        var popup_6f7ff0eeb5f897b0489755e0d5287451 = L.popup({
+  "maxWidth": "100%",
+});
+
+        
+            
+                var html_cfb4bd32f88af46f77a3f4a5adb27e7e = $(`<div id="html_cfb4bd32f88af46f77a3f4a5adb27e7e" style="width: 100.0%; height: 100.0%;"><strong>Accra</strong><br>Capital and major urban center</div>`)[0];
+                popup_6f7ff0eeb5f897b0489755e0d5287451.setContent(html_cfb4bd32f88af46f77a3f4a5adb27e7e);
+            
+        
+
+        marker_cdbfe7d6c5472f76966ac132b3d898d2.bindPopup(popup_6f7ff0eeb5f897b0489755e0d5287451)
+        ;
+
+        
+    
+    
+            marker_cdbfe7d6c5472f76966ac132b3d898d2.bindTooltip(
+                `<div>
+                     Accra
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+                marker_cdbfe7d6c5472f76966ac132b3d898d2.setIcon(icon_30debe8dce66c5f696a3c10387b61d55);
+            
+    
+            var marker_7a5c573eeb1b5783745a2fa62a168e50 = L.marker(
+                [5.6698, -0.0166],
+                {
+}
+            ).addTo(map_e9aa9cc69ab88881777501a48b386e2b);
+        
+    
+            var icon_f86d5aa49fe06de938f103f77757005b = L.AwesomeMarkers.icon(
+                {
+  "markerColor": "blue",
+  "iconColor": "white",
+  "icon": "info-sign",
+  "prefix": "glyphicon",
+  "extraClasses": "fa-rotate-0",
+}
+            );
+        
+    
+        var popup_9dc1494f6f083d0e13940785a654b53f = L.popup({
+  "maxWidth": "100%",
+});
+
+        
+            
+                var html_b5b2e737a7200fae037fbc9316996d7a = $(`<div id="html_b5b2e737a7200fae037fbc9316996d7a" style="width: 100.0%; height: 100.0%;"><strong>Tema</strong><br>Industrial and port city</div>`)[0];
+                popup_9dc1494f6f083d0e13940785a654b53f.setContent(html_b5b2e737a7200fae037fbc9316996d7a);
+            
+        
+
+        marker_7a5c573eeb1b5783745a2fa62a168e50.bindPopup(popup_9dc1494f6f083d0e13940785a654b53f)
+        ;
+
+        
+    
+    
+            marker_7a5c573eeb1b5783745a2fa62a168e50.bindTooltip(
+                `<div>
+                     Tema
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+                marker_7a5c573eeb1b5783745a2fa62a168e50.setIcon(icon_f86d5aa49fe06de938f103f77757005b);
+            
+    
+            var layer_control_f80cfdf6b131a2e19a4023b25ed9af50_layers = {
+                base_layers : {
+                    "openstreetmap" : tile_layer_d4de0dc9ab1ceb047963f8536b5a03c4,
+                },
+                overlays :  {
+                    "NO2 Concentration" : tile_layer_9639d9f8b0f2e1180c295eb3d0445e14,
+                    "CO Concentration" : tile_layer_7e89a026757c0b62d193df3b270b771a,
+                    "SO2 Concentration" : tile_layer_63c39a3817cc1e154ded58a850035a21,
+                    "Aerosol Index" : tile_layer_5ffe8351c99ef2763ed54cbfab39496d,
+                    "Continuous Air Quality Index - Weighted Overlay" : tile_layer_41500e2b9a081a5e68c5d99e80f8f620,
+                },
+            };
+            let layer_control_f80cfdf6b131a2e19a4023b25ed9af50 = L.control.layers(
+                layer_control_f80cfdf6b131a2e19a4023b25ed9af50_layers.base_layers,
+                layer_control_f80cfdf6b131a2e19a4023b25ed9af50_layers.overlays,
+                {
+  "position": "topright",
+  "collapsed": true,
+  "autoZIndex": true,
+}
+            ).addTo(map_e9aa9cc69ab88881777501a48b386e2b);
+
+        
+</script>
+</html>
